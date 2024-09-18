@@ -4,7 +4,7 @@ from pathlib import Path
 from pypdf import PdfReader
 import os
 
-def semantic_scholar_query(query ,limit):
+def semantic_scholar_query(query, limit):
     ''' Takes an integer limit and a string query where space is replaced with +, and = &, or = |. 
     Returns a Pandas DataFrame with paper titles, ids, abstracts, tldrs, and fields. '''
     paper_df = pd.DataFrame()
