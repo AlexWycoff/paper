@@ -5,6 +5,32 @@ from dotenv import load_dotenv
 from azure.ai.inference import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
 
+def prompt_query(query):
+    ''' Takes a text prompt and returns the binary search query to be used on academic databases. 
+    Uses the keywords and = &, or = |. '''
+    load_dotenv()
+    api_key = os.getenv("AZURE_INFERENCE_CREDENTIAL", '')
+    if not api_key:
+      raise Exception("A key should be provided to invoke the endpoint")
+
+    client = ChatCompletionsClient(
+        endpoint='https://Phi-3-5-mini-instruct-bzsru.eastus2.models.ai.azure.com',
+        credential=AzureKeyCredential(api_key)
+    )
+    
+    result = client.complete({
+        "messages": [
+          {
+            "role": "user",
+            "content": "Use the keywords & and | to create a simple binary search for an academic database that summarizes the following query:" + query
+          }
+        ],
+        "temperature": 0.8,
+        "top_p": 0.95,
+    })
+    response = str(result.choices[0].message.content)
+    return response
+
 def semantic_scholar_query(query, limit):
     ''' Takes an integer limit and a string query where space is replaced with +, and = &, or = |. 
     Returns a Pandas DataFrame with paper titles, ids, abstracts, tldrs, and fields. '''
@@ -130,6 +156,50 @@ def api_server_query(context, query, url='http://10.0.0.213:8080'):
         return response.json()['content'].strip(), context
     else:
         return "Error processing your request. Please try again.", context
+
+def prompt_query(query):
+    ''' Takes a text prompt and returns the binary search query to be used on academic databases. 
+    Uses the keywords and = &, or = |. '''
+    load_dotenv()
+    api_key = os.getenv("AZURE_INFERENCE_CREDENTIAL", '')
+    if not api_key:
+      raise Exception("A key should be provided to invoke the endpoint")
+
+    client = ChatCompletionsClient(
+        endpoint='https://Phi-3-5-mini-instruct-bzsru.eastus2.models.ai.azure.com',
+        credential=AzureKeyCredential(api_key)
+    )
+    
+    result = client.complete({
+        "messages": [
+          {
+            "role": "user",
+            "content": "Return a short comma-separated list (less than 5 items) of a few words describing various fields or topics of the following query:" + query + ". The first few word  and phrases in the list should come directly from the query."
+          }
+        ],
+        "temperature": 0.8,
+        "top_p": 0.95,
+    })
+    response = str(result.choices[0].message.content).strip()
+    
+    # Transform the response into a query by making a list from the result
+    query_list = []
+    last_comma = 0
+    while "," in response[last_comma:]:
+        comma_pos = response[last_comma:].find(",") + last_comma
+        query_list.append(response[last_comma:comma_pos].strip())
+        last_comma = comma_pos + 1
+    query_list.append(response[last_comma:].strip().replace(".", ""))
+    
+    # Create the final response
+    response = ""
+    for i in range(len(query_list)):
+        query = query_list[i]
+        query = query.replace(" ", "+")
+        response += f"({query})"
+        if i != len(query_list) - 1:
+            response += "|"
+    return response
     
 def research_query(query, limit=10, offset=0):
     ''' Takes a text prompt and returns phi 3.5 responses and a dictionary of token usage. '''
@@ -143,15 +213,14 @@ def research_query(query, limit=10, offset=0):
         credential=AzureKeyCredential(api_key)
     )
     
-    paper_df = core_query(query, limit=limit, offset=offset)
+    query = prompt_query(query)
     prompt = ""
-    for text in paper_df['text']:
-        prompt += text
-        
     abstract_df = semantic_scholar_query(query, limit)
     for abstract in abstract_df['abstract']:
         if abstract != None:
             prompt += abstract
+            
+    paper_df = core_query(query.replace("|", "OR"), limit=limit, offset=offset)
     
     result = client.complete({
         "messages": [
