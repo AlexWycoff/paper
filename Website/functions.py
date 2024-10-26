@@ -202,7 +202,7 @@ def research_query(query, stream=True, limit=25):
     
     query = prompt_query(query)
     yield "Boolean search: " + query + "\n"
-    
+        
     prompt = ""
     abstract_df = semantic_scholar_query(query, limit)
     for abstract in abstract_df['abstract']:
@@ -231,9 +231,9 @@ def research_query(query, stream=True, limit=25):
                 if text:
                     if "**" in text:
                         if bold_counter % 2 == 0:
-                            text = text.replace('**', '\033[1m')
+                            text = text.replace('**', '')
                         else:
-                            text = text.replace('**', '\033[0m')
+                            text = text.replace('**', '')
                         bold_counter += 1
                     yield text
     else:

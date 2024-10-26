@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="text-align: center; margin-bottom: 5px">
+        <h4>Find gaps in research on any topic</h4>
+    </div>
+    <form>
+        <textarea id="input" placeholder="Applications of Machine Learning" cols="60" rows="1"></textarea>
+    </form>
+    <pre id="body" style="margin-top: 15px"></pre>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const body = document.getElementById('body');
+        const input = document.getElementById('input');
+
+        input.addEventListener("keydown", async (e) => {
+            if (event.key == "Enter") {
+                e.preventDefault();
+
+                const response = await fetch("/results", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({message: input.value})
+                });
+
+                const reader = response.body.getReader();
+                let output = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    output += new TextDecoder().decode(value);
+                    body.innerHTML = marked.parse(output);
+
+                    if (done) {
+                        return;
+                    }
+                }
+            }
+
+        })
+    </script>
+{% endblock %}
