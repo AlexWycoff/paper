@@ -78,7 +78,8 @@ def core_query(query, limit=10, offset=0):
     Returns a Pandas DataFrame with paper titles, abstracts, links, and text. '''
     paper_df = pd.DataFrame()
     
-    core_api_key = '0IyesnpxHglJ8brOMXzUQfNi91S7PR3Z'
+    load_dotenv()
+    core_api_key = os.getenv("core_api_key", '')
     headers={"Authorization" : "Bearer " + core_api_key}
     url = 'https://api.core.ac.uk/v3/search/works/'
     r = requests.get(url + '?q=' + query + f'&limit={limit}' + f'&offset={offset}', headers=headers).json()['results']
