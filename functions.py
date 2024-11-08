@@ -149,7 +149,7 @@ def prompt_query(query):
         "messages": [
           {
             "role": "user",
-            "content": "Return a short comma-separated list (less than 5 items) of a few words describing various fields or topics of the following query:" + query + ". The first few word  and phrases in the list should come directly from the query."
+            "content": "Return a short comma-separated list (less than 5 items) of a few words describing various fields or topics of the following query:" + query + ". The first few words and phrases in the list should come directly from the query."
           }
         ],
         "temperature": 0.8,
@@ -181,9 +181,9 @@ def bold_text(string, separator="**"):
     while separator in string:
         first = string.find(separator)
         left = string[:first]
-        second = string[string.find(separator) + 2:].find(separator) + first + 2
-        right = string[second + 2:]
-        middle = string[first + 2:second]
+        second = string[string.find(separator) + len(separator):].find(separator) + first + len(separator)
+        right = string[second + len(separator):]
+        middle = string[first + len(separator):second]
         middle = '\033[1m' + middle + '\033[0m'
         string = left + middle + right
     return string
