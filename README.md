@@ -1,6 +1,6 @@
 # paper: AI for exploratory research
 
-The goal of this project is to use retrieval-augmented generation to help students understand the limitations of current research in fields they are interested in and provide them with open-access research from those fields.
+The goal of this project is to use retrieval-augmented generation to help students understand the limitations of current research in fields they are interested in and provide them with open-access research from those fields. Prototype hosted at [paperai.pythonanywhere.com](paperai.pythonanywhere.com).
 
 ## Requirements
 
